@@ -1,4 +1,4 @@
 .idea
 package-lock.json
 distr
-node-modules
+/node-modules

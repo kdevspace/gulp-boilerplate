@@ -12,11 +12,11 @@ let path = {
         fonts: project_folder + '/fonts/'
     },
     src: {
-        html: source_folder + '/',
-        css: source_folder + '/scss/',
-        js: source_folder + '/js/',
-        img: source_folder + '/img/',
-        fonts: source_folder + '/fonts/'
+        html: source_folder + '/*.html',
+        css: source_folder + '/scss/style.scss',
+        js: source_folder + '/js/main.js',
+        img: source_folder + '/img/**/*.{jpg,png,svg,gif,ico,webp}',
+        fonts: source_folder + '/fonts/*.ttf'
     },
     watch: {
         html: source_folder + '/**/*.html',
@@ -67,9 +67,11 @@ function html() {
 
 function css() {
     return src(path.src.css)
-        .pipe(scss({
+        .pipe(
+            scss({
                 outputStyle: "expanded"
-            }))
+            })
+        )
         .pipe(group_media())
         .pipe(autoprefixer({
             overrideBrowserList: ["last 5 versions"],
@@ -125,15 +127,15 @@ function fontsStyle(params) {
 
     let file_content = fs.readFileSync(source_folder + '/scss/fonts.scss');
     if (file_content == '') {
-        fs.writeFile(source_folder + '/scss/fonts.scss', '', cb);
-        return fs.readdir(path.build.fonts, function (err, items) {
+        fs.writeFile(source_folder + '/scss/fonts.scss', '', '', cb);
+        return fs.readdir(path.src.fonts, function (err, items) {
             if (items) {
                 let c_fontname;
                 for (var i = 0; i < items.length; i++) {
                     let fontname = items[i].split('.');
                     fontname = fontname[0];
                     if (c_fontname != fontname) {
-                        fs.appendFile(source_folder + '/scss/fonts.scss', '@include font("' + fontname + '", "' + fontname + '", "400", "normal");\r\n', cb);
+                        fs.appendFile(source_folder + '/scss/fonts.scss', '@include font("' + fontname + '", "' + fontname + '", "400", "normal");\r\n', '', cb);
                     }
                     c_fontname = fontname;
                 }
@@ -176,10 +178,9 @@ function clean(params) {
     return del(path.clean)
 }
 
-let build = gulp.series(clean, gulp.parallel(js, css, html, images, fonts), fontsStyle)
+let build = gulp.series(clean, gulp.parallel(js, css, html, images, fonts))
 let watch = gulp.parallel(build, watchFiles, browserSync)
 
-exports.fontsStyle = fontsStyle
 exports.images = images
 exports.js = js
 exports.css = css
